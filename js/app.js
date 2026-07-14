@@ -252,6 +252,35 @@ function renderListView() {
   }
 }
 
+// ---------- tag-chip input (comma/Enter to commit, click × or Backspace to remove) ----------
+
+function tagChipHtml(tag) {
+  return `<span class="tag-chip" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}<button type="button" class="tag-chip-remove" data-action="remove-tag" aria-label="删除标签 ${escapeHtml(tag)}">×</button></span>`;
+}
+
+function syncTagsHidden(container) {
+  const tags = [...container.querySelectorAll('.tag-chip')].map((el) => el.dataset.tag);
+  container.querySelector('input[name="tagsInput"]').value = tags.join(', ');
+}
+
+// Accepts the raw (possibly multi-tag, comma/顿号/newline-separated) text
+// typed or pasted into the field, reusing the same parser the form submit
+// path uses, so "already has this tag" dedup and trimming stay identical
+// whether a tag was committed via this widget or typed straight into the
+// hidden field on a very old draft.
+function addTagsFromInput(container, rawValue) {
+  const parsed = Tags.parseTagInput(rawValue);
+  if (parsed.length === 0) return;
+  const existing = new Set([...container.querySelectorAll('.tag-chip')].map((el) => el.dataset.tag));
+  const chipsWrap = container.querySelector('.tag-chips');
+  parsed.forEach((tag) => {
+    if (existing.has(tag)) return;
+    existing.add(tag);
+    chipsWrap.insertAdjacentHTML('beforeend', tagChipHtml(tag));
+  });
+  syncTagsHidden(container);
+}
+
 // ---------- form view (shared by add / edit) ----------
 
 function renderFormView() {
@@ -278,8 +307,12 @@ function renderFormView() {
       <label>CP/关系(可选)</label>
       <input name="relationship" value="${escapeHtml(draft.relationship)}" placeholder="角色A/角色B">
 
-      <label>附加标签(逗号分隔)</label>
-      <input name="tagsInput" value="${escapeHtml(Tags.formatTagInput(draft.tags))}" placeholder="ABO, 治愈, 轻松">
+      <label>附加标签(输入后按逗号或回车确认，没有的标签会自动创建)</label>
+      <div class="tag-input">
+        <div class="tag-chips">${draft.tags.map(tagChipHtml).join('')}</div>
+        <input type="text" class="tag-input-field" placeholder="输入标签后按逗号或回车">
+        <input type="hidden" name="tagsInput" value="${escapeHtml(Tags.formatTagInput(draft.tags))}">
+      </div>
 
       <label>Rating</label>
       <div class="radio-row">${CONTENT_RATINGS.map((o) => `<label class="radio-opt"><input type="radio" name="contentRating" value="${o.value}" ${draft.contentRating === o.value ? 'checked' : ''}>${optionBadge('contentRating', o.value)} ${escapeHtml(o.label)}</label>`).join('')}</div>
@@ -468,6 +501,46 @@ function bindAppEvents() {
       renderListView();
       return;
     }
+
+    const removeTagBtn = e.target.closest('[data-action="remove-tag"]');
+    if (removeTagBtn) {
+      const chip = removeTagBtn.closest('.tag-chip');
+      const container = chip.closest('.tag-input');
+      chip.remove();
+      syncTagsHidden(container);
+    }
+  });
+
+  // Comma/Enter commits the typed text as one or more tag chips (reusing
+  // Tags.parseTagInput so pasted "a, b, c" text splits into separate chips
+  // too); both must preventDefault or the comma would land in the field and
+  // Enter would submit the whole form instead of just adding a tag.
+  app.addEventListener('keydown', (e) => {
+    if (!e.target.matches('.tag-input-field')) return;
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addTagsFromInput(e.target.closest('.tag-input'), e.target.value);
+      e.target.value = '';
+      return;
+    }
+    if (e.key === 'Backspace' && e.target.value === '') {
+      const container = e.target.closest('.tag-input');
+      const chips = container.querySelectorAll('.tag-chip');
+      if (chips.length) {
+        chips[chips.length - 1].remove();
+        syncTagsHidden(container);
+      }
+    }
+  });
+
+  // Commits any text left in the field (typed but never confirmed with a
+  // comma/Enter) when focus leaves it — otherwise clicking straight from
+  // the tag field to the submit button would silently drop that last tag.
+  app.addEventListener('focusout', (e) => {
+    if (!e.target.matches('.tag-input-field')) return;
+    if (!e.target.value.trim()) return;
+    addTagsFromInput(e.target.closest('.tag-input'), e.target.value);
+    e.target.value = '';
   });
 
   app.addEventListener('submit', (e) => {

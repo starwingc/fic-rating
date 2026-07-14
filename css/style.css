@@ -213,6 +213,48 @@ textarea { min-height: 60px; resize: vertical; }
 .act { border: 2px solid var(--ink); background: var(--paper); padding: 11px 4px; font-size: 14px; font-weight: 800; color: var(--ink); }
 .act.on { background: var(--ink); color: var(--paper); }
 
+/* ---- tag-chip input ---- */
+
+.tag-input {
+  border: 2px solid var(--ink);
+  padding: 8px;
+  margin-bottom: 10px;
+}
+.tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.tag-chips:empty { margin-bottom: 0; }
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 2px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  padding: 3px 4px 3px 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.tag-chip-remove {
+  border: none;
+  background: none;
+  color: var(--paper);
+  padding: 0 4px;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+}
+.tag-input-field {
+  border: none;
+  margin-bottom: 0;
+  padding: 4px 2px;
+}
+.tag-input-field:focus-visible { outline: none; }
+.tag-input:focus-within { outline: 3px solid var(--ink); outline-offset: 1px; }
+
 /* ---- form ---- */
 
 .radio-row, .checkbox-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
