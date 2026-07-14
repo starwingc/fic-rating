@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "works": [
+    {
+      "id": "1783993514170-sn58rd",
+      "title": "黑山夜话",
+      "author": "",
+      "url": "",
+      "fandom": "原创",
+      "relationship": "",
+      "tags": [],
+      "rating": 1,
+      "notes": "",
+      "contentRating": "E",
+      "category": [
+        "M/M"
+      ],
+      "warning": "external-work",
+      "warningDetail": "",
+      "status": "complete",
+      "dateAdded": "2026-07-13",
+      "dateUpdated": "2026-07-13"
+    }
+  ],
+  "meta": {
+    "lastUpdated": "2026-07-14T01:45:14.171Z"
+  }
+}
