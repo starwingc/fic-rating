@@ -2,10 +2,10 @@
 // index.html and these imports) exists purely to bust GitHub Pages' 10-min
 // browser cache on deploy — mobile Safari has no real hard-refresh gesture,
 // so without this a phone can keep serving yesterday's JS after an update.
-import * as GH from './github-api.js?v=1';
-import * as Works from './works.js?v=1';
-import * as Tags from './tags.js?v=1';
-import { todayStr } from './date-utils.js?v=1';
+import * as GH from './github-api.js?v=2';
+import * as Works from './works.js?v=2';
+import * as Tags from './tags.js?v=2';
+import { todayStr } from './date-utils.js?v=2';
 
 const VIEWS = ['list', 'add', 'settings'];
 
