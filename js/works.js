@@ -7,8 +7,8 @@ export function createWork(fields = {}) {
     title: '',
     author: '',
     url: '',
-    fandom: '',
-    relationship: '',
+    fandom: [],
+    relationship: [],
     tags: [],
     rating: 1,
     notes: '',
@@ -47,7 +47,7 @@ function matchesQuery(work, query) {
   if (!query) return true;
   const q = query.trim().toLowerCase();
   if (!q) return true;
-  const haystack = [work.title, work.author, work.fandom, work.relationship, ...(work.tags || [])]
+  const haystack = [work.title, work.author, ...(work.fandom || []), ...(work.relationship || []), ...(work.tags || [])]
     .join(' ')
     .toLowerCase();
   return haystack.includes(q);

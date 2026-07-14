@@ -11,8 +11,7 @@ export function formatTagInput(tags) {
 export function buildTagCloud(works, field) {
   const counts = new Map();
   for (const w of works) {
-    const values = field === 'tags' ? (w.tags || []) : [w[field]].filter(Boolean);
-    for (const v of values) {
+    for (const v of w[field] || []) {
       counts.set(v, (counts.get(v) || 0) + 1);
     }
   }

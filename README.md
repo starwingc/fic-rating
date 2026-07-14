@@ -35,8 +35,8 @@ js/date-utils.js       日期字符串("YYYY-MM-DD")处理小工具
       "title": "标题",
       "author": "作者",
       "url": "https://archiveofourown.org/works/12345678",
-      "fandom": "原创",
-      "relationship": "角色A/角色B",
+      "fandom": ["原创"],
+      "relationship": ["角色A/角色B"],
       "tags": ["ABO", "治愈"],
       "rating": 4,
       "notes": "锐评正文……",
@@ -60,8 +60,7 @@ js/date-utils.js       日期字符串("YYYY-MM-DD")处理小工具
 - **`category`**(可多选数组):取值 `"F/F" | "F/M" | "Gen" | "M/M" | "Multi" | "Other"`;空数组表示"未分类"。
 - **`warning`**(单选):`"no-warning" | "warning-applies" | "not-chosen" | "external-work"`;只有 `"warning-applies"` 时 `warningDetail` 才有意义。
 - **`status`**(单选):`"wip" | "complete" | "unknown"`。
-- **`tags`**:存成去重、trim 过的字符串数组,录入时按逗号/顿号/换行切分。
-- **`fandom`**:同人作品填具体 Fandom 名,原创作品填"原创"。
+- **`tags`** / **`fandom`** / **`relationship`**:都存成去重、trim 过的字符串数组,录入时用同一套标签输入框——打字后按逗号或回车确认成一个标签(没有的标签直接创建),点标签上的 × 删除,支持一条记录填多个(比如 crossover 的多 Fandom、多 CP 的合集向作品)。同人作品的 Fandom 填具体圈名,原创作品不填时自动存成 `["原创"]`。
 
 ## AO3 风格标签筛选
 

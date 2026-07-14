@@ -183,8 +183,9 @@ function renderWorkCard(w) {
   const titleHtml = w.url
     ? `<a href="${escapeHtml(w.url)}" target="_blank" rel="noopener">${escapeHtml(w.title || '(无标题)')}</a>`
     : escapeHtml(w.title || '(无标题)');
-  const metaParts = [w.author || '佚名', w.fandom].filter(Boolean);
-  if (w.relationship) metaParts.push(w.relationship);
+  const metaParts = [w.author || '佚名'];
+  if (w.fandom && w.fandom.length) metaParts.push(w.fandom.join(' / '));
+  if (w.relationship && w.relationship.length) metaParts.push(w.relationship.join('、'));
   return `
     <div class="work-card" data-id="${w.id}">
       <div class="wc-head">
@@ -253,14 +254,26 @@ function renderListView() {
 }
 
 // ---------- tag-chip input (comma/Enter to commit, click × or Backspace to remove) ----------
+// Reused for every free-text-list field on the form (additional tags, fandom,
+// relationship/CP) — any of them can hold more than one value (crossovers,
+// multi-ship works), not just the "additional tags" field.
 
 function tagChipHtml(tag) {
   return `<span class="tag-chip" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}<button type="button" class="tag-chip-remove" data-action="remove-tag" aria-label="删除标签 ${escapeHtml(tag)}">×</button></span>`;
 }
 
+function tagInputHtml(hiddenName, tags, placeholder) {
+  return `
+    <div class="tag-input">
+      <div class="tag-chips">${(tags || []).map(tagChipHtml).join('')}</div>
+      <input type="text" class="tag-input-field" placeholder="${escapeHtml(placeholder)}">
+      <input type="hidden" name="${hiddenName}" value="${escapeHtml(Tags.formatTagInput(tags))}">
+    </div>`;
+}
+
 function syncTagsHidden(container) {
   const tags = [...container.querySelectorAll('.tag-chip')].map((el) => el.dataset.tag);
-  container.querySelector('input[name="tagsInput"]').value = tags.join(', ');
+  container.querySelector('input[type="hidden"]').value = tags.join(', ');
 }
 
 // Accepts the raw (possibly multi-tag, comma/顿号/newline-separated) text
@@ -301,18 +314,14 @@ function renderFormView() {
       <label>链接(可选，AO3/Lofter/晋江等任意来源)</label>
       <input name="url" type="url" value="${escapeHtml(draft.url)}" placeholder="https://...">
 
-      <label>Fandom(原创作品填"原创")</label>
-      <input name="fandom" value="${escapeHtml(draft.fandom)}" placeholder="原创">
+      <label>Fandom(原创作品可以直接加"原创"标签；支持多个，用于合集/crossover)</label>
+      ${tagInputHtml('fandomInput', draft.fandom, '输入 Fandom 后按逗号或回车，可添加多个')}
 
-      <label>CP/关系(可选)</label>
-      <input name="relationship" value="${escapeHtml(draft.relationship)}" placeholder="角色A/角色B">
+      <label>CP/关系(可选，支持多个)</label>
+      ${tagInputHtml('relationshipInput', draft.relationship, '输入 CP 后按逗号或回车，可添加多个')}
 
       <label>附加标签(输入后按逗号或回车确认，没有的标签会自动创建)</label>
-      <div class="tag-input">
-        <div class="tag-chips">${draft.tags.map(tagChipHtml).join('')}</div>
-        <input type="text" class="tag-input-field" placeholder="输入标签后按逗号或回车">
-        <input type="hidden" name="tagsInput" value="${escapeHtml(Tags.formatTagInput(draft.tags))}">
-      </div>
+      ${tagInputHtml('tagsInput', draft.tags, '输入标签后按逗号或回车')}
 
       <label>Rating</label>
       <div class="radio-row">${CONTENT_RATINGS.map((o) => `<label class="radio-opt"><input type="radio" name="contentRating" value="${o.value}" ${draft.contentRating === o.value ? 'checked' : ''}>${optionBadge('contentRating', o.value)} ${escapeHtml(o.label)}</label>`).join('')}</div>
@@ -347,12 +356,13 @@ function renderFormView() {
 async function handleFormSubmit(form) {
   const fd = new FormData(form);
   const warning = fd.get('warning') || 'not-chosen';
+  const fandom = Tags.parseTagInput(fd.get('fandomInput'));
   const fields = {
     title: fd.get('title').trim(),
     author: fd.get('author').trim(),
     url: fd.get('url').trim(),
-    fandom: fd.get('fandom').trim() || '原创',
-    relationship: fd.get('relationship').trim(),
+    fandom: fandom.length ? fandom : ['原创'],
+    relationship: Tags.parseTagInput(fd.get('relationshipInput')),
     tags: Tags.parseTagInput(fd.get('tagsInput')),
     contentRating: fd.get('contentRating') || 'not-rated',
     category: fd.getAll('category'),
