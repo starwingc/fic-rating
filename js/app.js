@@ -81,7 +81,7 @@ async function refreshData() {
   setSyncStatus('同步中…');
   try {
     const { data, mode } = await GH.loadData();
-    state.data = data;
+    state.data = Works.normalizeData(data);
     state.mode = mode;
     state.error = null;
   } catch (e) {
@@ -95,7 +95,7 @@ async function applyMutation(fn) {
   setSyncStatus('保存中…');
   try {
     const { data, mode } = await GH.mutate((current) => fn({ ...current }) || current);
-    state.data = data;
+    state.data = Works.normalizeData(data);
     state.mode = mode;
     state.error = null;
   } catch (e) {

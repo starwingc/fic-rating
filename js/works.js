@@ -1,5 +1,24 @@
 import { todayStr } from './date-utils.js';
 
+function toArray(value) {
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string' && value.trim()) return [value.trim()];
+  return [];
+}
+
+// Early saved entries stored fandom/relationship as a single string; this
+// upgrades any such entry to the current array shape in memory on every
+// load, so old data never crashes rendering/filtering code that expects
+// arrays. Nothing is migrated on disk until that entry is next edited and
+// saved — this is a lazy, read-side self-heal, not a one-off script.
+export function normalizeWork(work) {
+  return { ...work, fandom: toArray(work.fandom), relationship: toArray(work.relationship), tags: toArray(work.tags) };
+}
+
+export function normalizeData(data) {
+  return { ...data, works: (data.works || []).map(normalizeWork) };
+}
+
 export function createWork(fields = {}) {
   const today = todayStr();
   return {
